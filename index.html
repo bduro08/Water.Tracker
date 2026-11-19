@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#102a43">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Hydration">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <title>Hydration Tracker</title>
+  <style>
+    :root{color-scheme:dark;--bg:#0b1724;--panel:#122538;--panel2:#183149;--line:#29445b;--text:#edf6fc;--muted:#a9bdcd;--blue:#4bb8ed;--green:#61d6a3;--orange:#ffca76}
+    *{box-sizing:border-box} body{margin:0;background:linear-gradient(160deg,#10283c,#091521 65%);color:var(--text);font:16px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh;padding:env(safe-area-inset-top) 16px calc(24px + env(safe-area-inset-bottom))}
+    .app{max-width:620px;margin:0 auto}.top{display:flex;justify-content:space-between;align-items:center;padding:20px 2px 14px}.eyebrow{font-size:11px;letter-spacing:.15em;color:var(--blue);font-weight:800}.date{font-size:13px;color:var(--muted)}
+    h1{font-size:25px;margin:4px 0 0}.card{background:rgba(18,37,56,.96);border:1px solid var(--line);border-radius:22px;padding:18px;margin:12px 0;box-shadow:0 10px 28px #0002}
+    .hero{background:linear-gradient(145deg,#143e5a,#122538 75%)}.totalrow{display:flex;align-items:baseline;gap:7px;margin:6px 0}.total{font-size:48px;font-weight:800;letter-spacing:-2px}.unit,.sub{color:var(--muted)}.goal{font-size:15px}
+    .progress{height:12px;border-radius:20px;background:#29445b;overflow:hidden;margin:12px 0 8px}.bar{height:100%;width:0;background:linear-gradient(90deg,#38aee7,#68d9ef);border-radius:20px;transition:width .25s}
+    .between{display:flex;justify-content:space-between;gap:12px;font-size:12px;color:var(--muted)}.goaltools{display:flex;gap:8px;align-items:center;margin-top:15px;flex-wrap:wrap}
+    button,input,select{font:inherit} button{border:1px solid var(--line);border-radius:14px;background:var(--panel2);color:var(--text);padding:12px 14px;font-weight:700;cursor:pointer}button:active{transform:scale(.98)}button.primary{background:#17658c;border-color:#2588b6}button.ghost{background:transparent}button.small{padding:8px 11px;font-size:13px}
+    .sectionhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.sectionhead h2{font-size:17px;margin:0}.pill{font-size:11px;color:#b9eaff;background:#174663;border-radius:30px;padding:6px 9px}
+    .routine{display:grid;gap:9px}.routine button{display:flex;align-items:center;gap:12px;text-align:left;padding:13px;background:#152c40}.routine button.done{border-color:#338b78;background:#123b3b}.drop{width:36px;height:36px;display:grid;place-items:center;border-radius:12px;background:#214b67;color:#83d8ff;font-size:19px;flex:none}.done .drop{background:#1b654f;color:#b8f5d9}.rtext{flex:1}.rtext b{display:block;font-size:15px}.rtext small{display:block;color:var(--muted);margin-top:3px;font-weight:400}.amount{font-weight:800}.check{color:var(--green);font-size:18px}
+    .tabs{display:flex;gap:7px;margin:14px 0}.tabs button{flex:1;padding:10px 4px;font-size:13px}.tabs button.active{background:#1b6286;border-color:#3aa5d4}
+    .historylist{display:grid;gap:8px}.dayrow{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;padding:11px;border-radius:13px;background:#152c40}.dayrow strong{font-size:14px}.dayrow small{display:block;color:var(--muted);font-size:12px;margin-top:3px}.dayamt{text-align:right;font-weight:800}.mini{height:5px;background:#29445b;border-radius:9px;margin-top:7px;overflow:hidden}.mini span{display:block;height:100%;background:var(--blue)}
+    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.stat{background:#152c40;padding:12px;border-radius:14px}.stat b{font-size:23px;display:block}.stat small{color:var(--muted);font-size:11px}
+    label{display:block;color:var(--muted);font-size:12px;margin:10px 0 5px}input,select{width:100%;background:#0d1d2b;color:var(--text);border:1px solid var(--line);border-radius:11px;padding:11px}
+    .formrow{display:grid;grid-template-columns:1fr 1fr;gap:9px}.reminderrow{display:flex;gap:8px;align-items:center;margin:8px 0}.reminderrow input{width:auto}.note{font-size:12px;color:var(--muted);line-height:1.5}.notice{background:#3d321d;border:1px solid #79602d;color:#ffe3ad;padding:12px;border-radius:13px;font-size:12px;line-height:1.5}
+    .footer{color:#8198aa;font-size:11px;text-align:center;padding:16px 8px}.hidden{display:none!important}
+    @media(min-width:520px){.routine{grid-template-columns:1fr 1fr}.routine button:last-child{grid-column:span 2}}
+  </style>
+</head>
+<body>
+<div class="app">
+  <header class="top"><div><div class="eyebrow">DAILY HYDRATION</div><h1 id="appTitle">My Hydration Tracker</h1></div><div class="date" id="todayLabel"></div></header>
+  <section class="card hero">
+    <div class="between"><span>TODAY'S INTAKE</span><span id="goalBadge">95 oz goal</span></div>
+    <div class="totalrow"><span class="total" id="total">0</span><span class="unit">oz</span><span class="goal">/ <span id="goalText">95</span> oz</span></div>
+    <div class="progress"><div class="bar" id="bar"></div></div>
+    <div class="between"><span id="percent">0% complete</span><span id="remaining">95 oz to go</span></div>
+    <div class="goaltools"><span class="sub" style="font-size:12px">Daily goal</span><button class="small" data-goal="80">80 oz</button><button class="small primary" data-goal="95">95 oz</button><button class="small" data-goal="100">100 oz</button></div>
+  </section>
+  <section class="card">
+    <div class="sectionhead"><h2>Your five daily check-ins</h2><span class="pill" id="completed">0 / 5 logged</span></div>
+    <div class="routine" id="routine"></div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <input id="customAmount" type="number" min="1" max="200" placeholder="Other amount (oz)" inputmode="decimal">
+      <button class="primary" id="addCustom">+ Add</button>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:9px"><button class="small" id="addFullBottle">＋ Full bottle (<span id="bottleSizeLabel">21</span> oz)</button><button class="small" id="addHalfBottle">½ bottle</button></div>
+    <p class="note">Tap a routine item once to log it. Tap it again to undo it. Extra water and bottle entries are logged separately.</p>
+  </section>
+  <section class="card">
+    <div class="sectionhead"><h2>Your consistency</h2><span class="pill">Local history</span></div>
+    <div class="stats">
+      <div class="stat"><b id="streak">0</b><small>Day streak</small></div>
+      <div class="stat"><b id="weekAvg">0</b><small>7-day avg (oz)</small></div>
+      <div class="stat"><b id="goalDays">0/7</b><small>Goals hit (7 days)</small></div>
+    </div>
+  </section>
+  <section class="card">
+    <div class="sectionhead"><h2>History</h2><span class="sub" style="font-size:12px">Last 14 days</span></div>
+    <div class="historylist" id="history"></div>
+  </section>
+  <section class="card">
+    <div class="sectionhead"><h2>Reminders</h2><span class="pill" id="reminderStatus">Not enabled</span></div>
+    <p class="note">Set gentle reminders around your routine. On iPhone, this web app can check reminders while it is open. It cannot reliably schedule background notifications by itself; use the iPhone Reminders app for alerts when Hydration Tracker is closed.</p>
+    <div id="reminders"></div>
+    <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap"><button class="primary" id="saveReminders">Save reminder times</button><button class="ghost" id="enableNotifications">Enable in-app alerts</button></div>
+    <p class="note" id="notificationNote"></p>
+  </section>
+  <section class="card">
+    <div class="sectionhead"><h2>Personalize your tracker</h2><span class="pill">Saved on this iPhone</span></div>
+    <label for="trackerName">Your tracker name</label><input id="trackerName" maxlength="32" placeholder="e.g. Brandon's Hydration">
+    <div class="formrow"><div><label for="customGoal">Daily goal (oz)</label><input id="customGoal" type="number" min="1" max="500" inputmode="decimal" placeholder="95"></div><div><label for="bottleSize">My bottle size (oz)</label><input id="bottleSize" type="number" min="1" max="128" inputmode="decimal" placeholder="21"></div></div>
+    <p class="note">Customize the five routine amounts below too. All settings are saved on this device.</p>
+    <div class="sectionhead" style="margin-top:14px"><h2>Routine amounts</h2></div><div class="formrow" id="routineAmounts"></div>
+    <button class="primary" id="savePersonalization" style="width:100%;margin-top:12px">Save my settings</button>
+    <div class="sectionhead" style="margin-top:20px"><h2>Data & settings</h2></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="small" id="export">Export history</button><button class="small" id="resetToday">Reset today</button></div>
+    <p class="note">Your entries and settings are saved in this browser on this iPhone. Clearing website data or switching browsers can erase or separate your history. Export a backup occasionally.</p>
+  </section>
+  <div class="footer">Hydration Tracker · Private local storage · Not medical advice</div>
+</div>
+<script>
+const ROUTINE=[
+ {id:"morning",name:"Morning",desc:"After waking up",oz:16},
+ {id:"lunch",name:"Lunch / Work",desc:"At lunch or throughout work",oz:16},
+ {id:"gym",name:"After Work / Gym",desc:"After work and around your workout",oz:21},
+ {id:"dinner",name:"Dinner",desc:"With your evening meal",oz:21},
+ {id:"bed",name:"Before Bed",desc:"Final evening water; sip comfortably",oz:21}
+];
+const KEY="hydration-tracker-v1";
+const defaultState={goal:95,trackerName:"My Hydration Tracker",bottleSize:21,routineAmounts:{morning:16,lunch:16,gym:21,dinner:21,bed:21},days:{},reminders:[
+ {id:"morning",label:"Morning water",time:"08:00",on:true},
+ {id:"lunch",label:"Lunch / work water",time:"12:00",on:true},
+ {id:"gym",label:"After work / gym water",time:"16:00",on:true},
+ {id:"dinner",label:"Dinner water",time:"19:00",on:true},
+ {id:"bed",label:"Evening water",time:"21:00",on:true}
+],lastAlert:{}};
+let state=load();
+function load(){try{return {...defaultState,...JSON.parse(localStorage.getItem(KEY)||"{}")}}catch(e){return structuredClone(defaultState)}}
+function save(){localStorage.setItem(KEY,JSON.stringify(state))}
+function dateKey(d=new Date()){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`}
+function dayData(k=dateKey()){return state.days[k]||(state.days[k]={checks:[],extra:0})}
+function amount(k=dateKey()){const d=state.days[k];return d?ROUTINE.reduce((s,r)=>s+(d.checks.includes(r.id)?Number(state.routineAmounts?.[r.id]??r.oz):0),0)+(Number(d.extra)||0):0}
+function fmtDate(k){return new Date(k+"T12:00:00").toLocaleDateString(undefined,{weekday:"short",month:"short",day:"numeric"})}
+function render(){
+ const k=dateKey(),d=dayData(k),total=amount(k),goal=Number(state.goal)||95,pct=Math.min(100,total/goal*100);
+ document.getElementById("todayLabel").textContent=new Date().toLocaleDateString(undefined,{weekday:"short",month:"short",day:"numeric"});
+ document.getElementById("appTitle").textContent=state.trackerName||"My Hydration Tracker";
+ document.getElementById("bottleSizeLabel").textContent=state.bottleSize||21;
+ document.getElementById("total").textContent=Number.isInteger(total)?total:total.toFixed(1);
+ document.getElementById("goalText").textContent=goal;document.getElementById("goalBadge").textContent=goal+" oz goal";
+ document.getElementById("bar").style.width=pct+"%";document.getElementById("percent").textContent=Math.round(pct)+"% complete";
+ document.getElementById("remaining").textContent=Math.max(0,goal-total).toFixed(1).replace(/\.0$/,"")+" oz "+(total>=goal?"over goal":"to go");
+ document.getElementById("completed").textContent=d.checks.length+" / 5 logged";
+ document.querySelectorAll("[data-goal]").forEach(b=>b.classList.toggle("primary",Number(b.dataset.goal)===goal));
+ document.getElementById("routine").innerHTML=ROUTINE.map(r=>{const done=d.checks.includes(r.id);return `<button class="${done?"done":""}" data-routine="${r.id}" aria-pressed="${done}"><span class="drop">${done?"✓":"💧"}</span><span class="rtext"><b>${r.name}</b><small>${r.desc}</small></span><span class="amount">${Number(state.routineAmounts?.[r.id]??r.oz)} oz</span><span class="check">${done?"✓":""}</span></button>`}).join("");
+ document.getElementById("routine").querySelectorAll("[data-routine]").forEach(b=>b.addEventListener("click",()=>toggleRoutine(b.dataset.routine)));
+ renderStats();renderHistory();renderReminders();renderPersonalization();save();
+}
+function toggleRoutine(id){const d=dayData(),i=d.checks.indexOf(id);if(i>=0)d.checks.splice(i,1);else d.checks.push(id);render()}
+function renderPersonalization(){
+ const fields={trackerName:state.trackerName||"My Hydration Tracker",customGoal:state.goal||95,bottleSize:state.bottleSize||21};
+ Object.entries(fields).forEach(([id,value])=>{const el=document.getElementById(id);if(document.activeElement!==el)el.value=value});
+ const host=document.getElementById("routineAmounts");
+ if(!host.dataset.ready){host.innerHTML=ROUTINE.map(r=>`<div><label for="amt-${r.id}">${r.name} (oz)</label><input id="amt-${r.id}" type="number" min="1" max="200" step="0.5" inputmode="decimal" value="${Number(state.routineAmounts?.[r.id]??r.oz)}"></div>`).join("");host.dataset.ready="1"}
+ else ROUTINE.forEach(r=>{const el=document.getElementById("amt-"+r.id);if(document.activeElement!==el)el.value=Number(state.routineAmounts?.[r.id]??r.oz)});
+}
+function renderStats(){
+ const today=dateKey(),goal=Number(state.goal)||95;let streak=0;
+ for(let i=0;i<366;i++){const dt=new Date();dt.setDate(dt.getDate()-i);const k=dateKey(dt);if(amount(k)>=goal)streak++;else break}
+ let sum=0,hit=0;for(let i=0;i<7;i++){const dt=new Date();dt.setDate(dt.getDate()-i);const a=amount(dateKey(dt));sum+=a;if(a>=goal)hit++}
+ document.getElementById("streak").textContent=streak;document.getElementById("weekAvg").textContent=(sum/7).toFixed(0);document.getElementById("goalDays").textContent=hit+"/7";
+}
+function renderHistory(){
+ const el=document.getElementById("history"),goal=Number(state.goal)||95;let rows="";
+ for(let i=0;i<14;i++){const dt=new Date();dt.setDate(dt.getDate()-i);const k=dateKey(dt),a=amount(k),exists=!!state.days[k];rows+=`<div class="dayrow"><div><strong>${i===0?"Today":fmtDate(k)}</strong><small>${exists?`${Math.round(a/goal*100)}% of goal`:"No entries"}</small><div class="mini"><span style="width:${Math.min(100,a/goal*100)}%"></span></div></div><div class="dayamt">${a.toFixed(0)} oz</div></div>`}
+ el.innerHTML=rows;
+}
+function renderReminders(){
+ const el=document.getElementById("reminders");
+ el.innerHTML=state.reminders.map(r=>`<div class="reminderrow"><input type="checkbox" data-remind-on="${r.id}" ${r.on?"checked":""} aria-label="Enable ${r.label}"><div style="flex:1"><div style="font-size:14px">${r.label}</div></div><input type="time" data-remind-time="${r.id}" value="${r.time}" style="width:115px"></div>`).join("");
+ document.getElementById("reminderStatus").textContent=state.reminders.some(r=>r.on)?"Times configured":"Off";
+}
+document.querySelectorAll("[data-goal]").forEach(b=>b.addEventListener("click",()=>{state.goal=Number(b.dataset.goal);render()}));
+document.getElementById("addCustom").addEventListener("click",()=>{const n=Number(document.getElementById("customAmount").value);if(!Number.isFinite(n)||n<=0||n>200){alert("Enter an amount between 1 and 200 oz.");return}dayData().extra=(Number(dayData().extra)||0)+n;document.getElementById("customAmount").value="";render()});
+document.getElementById("saveReminders").addEventListener("click",()=>{state.reminders.forEach(r=>{const c=document.querySelector(`[data-remind-on="${r.id}"]`),t=document.querySelector(`[data-remind-time="${r.id}"]`);r.on=c.checked;r.time=t.value});save();renderReminders();alert("Reminder times saved on this device.")});
+document.getElementById("enableNotifications").addEventListener("click",async()=>{const note=document.getElementById("notificationNote");if(!("Notification"in window)){note.textContent="This browser does not support notifications.";return}const p=await Notification.requestPermission();note.textContent=p==="granted"?"In-app alerts enabled. Keep the app open for reminder checks.":"Notifications were not enabled. You can still use the schedule with iPhone Reminders.";document.getElementById("reminderStatus").textContent=p==="granted"?"In-app alerts on":"Times configured"});
+function checkReminders(){if(!("Notification"in window)||Notification.permission!=="granted")return;const now=new Date(),hm=now.toTimeString().slice(0,5),k=dateKey();state.reminders.forEach(r=>{if(!r.on||r.time!==hm||state.lastAlert[r.id]===k+" "+hm)return;state.lastAlert[r.id]=k+" "+hm;new Notification("Time for some water 💧",{body:r.label+" — log it in your Hydration Tracker."})});save()}
+
+document.getElementById("addFullBottle").addEventListener("click",()=>{dayData().extra=(Number(dayData().extra)||0)+Number(state.bottleSize||21);render()});
+document.getElementById("addHalfBottle").addEventListener("click",()=>{dayData().extra=(Number(dayData().extra)||0)+Number(state.bottleSize||21)/2;render()});
+document.getElementById("savePersonalization").addEventListener("click",()=>{
+ const name=document.getElementById("trackerName").value.trim()||"My Hydration Tracker",goal=Number(document.getElementById("customGoal").value),bottle=Number(document.getElementById("bottleSize").value);
+ if(!Number.isFinite(goal)||goal<1||goal>500){alert("Enter a daily goal between 1 and 500 oz.");return}
+ if(!Number.isFinite(bottle)||bottle<1||bottle>128){alert("Enter a bottle size between 1 and 128 oz.");return}
+ const amounts={};for(const r of ROUTINE){const n=Number(document.getElementById("amt-"+r.id).value);if(!Number.isFinite(n)||n<1||n>200){alert("Each routine amount must be between 1 and 200 oz.");return}amounts[r.id]=n}
+ state.trackerName=name;state.goal=goal;state.bottleSize=bottle;state.routineAmounts=amounts;render();alert("Your personalized settings have been saved.");
+});
+
+document.getElementById("resetToday").addEventListener("click",()=>{if(confirm("Reset today's water entries? This cannot be undone.")){delete state.days[dateKey()];render()}});
+document.getElementById("export").addEventListener("click",()=>{const data={exportedAt:new Date().toISOString(),goal:state.goal,days:state.days,reminders:state.reminders};const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="hydration-history.json";a.click();URL.revokeObjectURL(url)});
+if("serviceWorker"in navigator && location.protocol!=="file:"){navigator.serviceWorker.register("./sw.js").catch(()=>{})}
+render();checkReminders();setInterval(checkReminders,30000);document.addEventListener("visibilitychange",()=>{if(!document.hidden){render();checkReminders()}});
+</script>
+</body>
+</html>
